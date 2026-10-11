@@ -38,6 +38,17 @@ const TEMPLATES = {
   ],
 };
 
+// أرقام فصول محجوزة لمعامل بتتسمى "Room NNN" في الجداول (مبنى 1)
+const RESERVED = { 1: { 1: [104, 106], 2: [205] } };
+// [الدور، النوع، ترتيبها جوه الدور، الاسم المستعار]
+const ALIASES = {
+  1: [
+    [1, 'LAB', 0, 'Room 104'],
+    [1, 'LAB', 1, 'Room 106'],
+    [2, 'LAB', 0, 'Room 205'],
+  ],
+};
+
 const OUTER_Z0 = -16.6; // بداية الصف الخارجي
 const INNER_Z0 = -4; // بعد غرفة السلم
 const Z_END = 30;
@@ -73,8 +84,12 @@ export function buildLayout(bid) {
     if (!t.numbered) return { ar: t.ar, en: t.en, num: null };
     if (type === 'CR') {
       // الفصول بترقيم الدور: 101 = أول فصل في الدور الأول
-      counters[`CR${level}`] = (counters[`CR${level}`] || 0) + 1;
-      const n = level * 100 + counters[`CR${level}`];
+      const taken = RESERVED[bid]?.[level] || [];
+      let n;
+      do {
+        counters[`CR${level}`] = (counters[`CR${level}`] || 0) + 1;
+        n = level * 100 + counters[`CR${level}`];
+      } while (taken.includes(n));
       return { ar: `فصل ${n}`, en: `Room ${n}`, num: n };
     }
     counters[type] = (counters[type] || 0) + 1;
@@ -159,6 +174,14 @@ export function buildLayout(bid) {
     }
   }
 
+  (ALIASES[bid] || []).forEach(([lv, type, k, alias]) => {
+    const r = floors[lv].rooms.filter((x) => x.type === type)[k];
+    if (r) {
+      r.alias = alias;
+      r.nameAr += ` (${alias})`;
+      r.nameEn += ` (${alias})`;
+    }
+  });
   const graph = buildGraph(bid, floors);
   return { id: bid, floors, rooms, graph, stairVoids: stairVoids(floors) };
 }

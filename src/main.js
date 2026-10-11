@@ -763,7 +763,7 @@ function setupImport() {
     courses = loadCourses();
     $('#modal').hidden = true;
     renderResults();
-    toast('رجعنا للبيانات التجريبية');
+    toast('رجعنا لجداول الكلية الأصلية');
   };
   $('#mSample').onclick = () => {
     const rows = ['code,name_ar,name_en,year,instructor,day,start,end,kind,room,group', 'CS101,أساسيات البرمجة,Programming Fundamentals,1,د. أحمد سمير,السبت,09:00,10:30,lecture,B1-LH1,', 'CS101,أساسيات البرمجة,Programming Fundamentals,1,د. أحمد سمير,الاثنين,11:00,12:30,lab,B1-LAB1,G1'];

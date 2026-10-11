@@ -895,3 +895,6 @@ body.hide-dims .room-label i {
 .link{border:0;background:none;color:var(--accent);font-weight:700;display:inline-flex;gap:4px;align-items:center}
 .stepsbox{background:rgba(255,255,255,.7);border-radius:12px;padding:8px 12px}
 .stepsbox summary{cursor:pointer;font-weight:700;font-size:13.5px}
+
+.course h4 span{unicode-bidi:plaintext;text-align:start}
+.dest-title{unicode-bidi:plaintext}

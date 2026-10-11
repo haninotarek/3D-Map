@@ -1,8 +1,8 @@
-// بيانات الجداول — ⚠️ بيانات تجريبية (placeholder) لحد ما تضيف جداولكم الحقيقية
-// الصيغة: كل مادة لها جلسات، والغرفة بصيغة [رقم المبنى, نوع الغرفة, رقمها]
-// أنواع الغرف: LH قاعة محاضرات | CR فصل | LAB معمل | DR قاعة رسم
-// تقدر تستورد جدول حقيقي من زر "استيراد" (JSON أو CSV) — شوف README
-import { pickRoom, findRoom } from './layout.js';
+// الجداول — خريف 2026-2027 (من جداول الكلية). أسماء المواد زي ما هي مكتوبة بالإنجليزي.
+// أكواد الغرف: B1-LH3 = مبنى 1 قاعة محاضرات 3 | LAB معمل | DR قاعة رسم | CR فصل (B1-CR105 = Room 105)
+// افتراضات: الفرقة الأولى والرابعة في مبنى 1، والخانات اللي من غير اسم مبنى في الفرقة التانية = مبنى 2
+// تقدر تستورد جدول بديل من زر "الجداول" (JSON أو CSV)
+import { findRoom } from './layout.js';
 
 export const DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
 export const YEARS = [
@@ -17,146 +17,203 @@ export const KINDS = {
   lab: { ar: 'معمل', color: '#ff9b4a' },
 };
 
-const S = (day, start, end, kind, room, group) => ({ day, start, end, kind, room, group });
+const PERIODS = { 1: ['10:00', '11:15'], 2: ['11:20', '12:30'], 3: ['12:35', '13:45'], 4: ['13:50', '15:00'] };
+const D = { Sun: 'الأحد', Mon: 'الاثنين', Tue: 'الثلاثاء', Wed: 'الأربعاء', Thu: 'الخميس' };
+const L = 'lecture';
+const S = 'section';
+const B = 'lab';
 
-// ---------- الفرقة الثالثة — جدول حقيقي (Fall 2026-2027، مبنى هندسة 2) ----------
-const P = { 1: ['10:00', '11:15'], 2: ['11:20', '12:30'], 3: ['12:35', '13:45'], 4: ['13:50', '15:00'] };
-const slot = (day, p, kind, room, group) => S(day, P[p][0], P[p][1], kind, room, group);
-const H = (n) => ['B2-LH' + n];
-const LAB = (n) => ['B2-LAB' + n];
-const Y3 = { year: 3, instructor: '', real: true };
-const LEVEL3 = [
-  { ...Y3, code: 'L3-SOC', ar: 'قضايا مجتمعية', en: 'Societal Issues', sessions: [slot('الاثنين', 2, 'lecture', 'B2-CR101', 'مجموعة أسبوعية: GA (1,2) / GB (3,4)')] },
-  {
-    ...Y3, code: 'L3-ALG', ar: 'تصميم وتحليل الخوارزميات', en: 'Algorithms Design and Analysis',
-    sessions: [slot('الاثنين', 3, 'lecture', H(4)[0]), slot('الثلاثاء', 1, 'section', H(2)[0], 'سكشن 3,4'), slot('الثلاثاء', 4, 'section', H(4)[0], 'سكشن 1,2')],
-  },
-  { ...Y3, code: 'L3-HIS', ar: 'مقدمة في تاريخ الحضارات', en: 'Introduction to History of Civilizations', sessions: [slot('الاثنين', 4, 'lecture', H(2)[0])] },
-  {
-    ...Y3, code: 'L3-NET', ar: 'شبكات الحاسب', en: 'Computer Networks',
-    sessions: [
-      slot('الثلاثاء', 1, 'lab', LAB(1)[0], 'سكشن/لاب 1'),
-      slot('الثلاثاء', 2, 'lab', LAB(1)[0], 'سكشن/لاب 3'),
-      slot('الثلاثاء', 3, 'lab', LAB(2)[0], 'سكشن/لاب 2'),
-      slot('الثلاثاء', 4, 'lab', LAB(2)[0], 'سكشن/لاب 4'),
-      slot('الأربعاء', 2, 'lecture', H(2)[0]),
-    ],
-  },
-  {
-    ...Y3, code: 'L3-TOP', ar: 'موضوعات مختارة في علوم الحاسب', en: 'Selected Topics in C.S.',
-    sessions: [
-      slot('الثلاثاء', 1, 'lab', LAB(2)[0], 'سكشن/لاب 2'),
-      slot('الثلاثاء', 2, 'lab', LAB(2)[0], 'سكشن/لاب 4'),
-      slot('الثلاثاء', 3, 'lab', LAB(1)[0], 'سكشن/لاب 1'),
-      slot('الثلاثاء', 4, 'lab', LAB(1)[0], 'سكشن/لاب 3'),
-      slot('الأربعاء', 3, 'lecture', H(4)[0]),
-    ],
-  },
-  {
-    ...Y3, code: 'L3-AI', ar: 'الذكاء الاصطناعي', en: 'Artificial Intelligence',
-    sessions: [slot('الثلاثاء', 2, 'section', H(4)[0], 'سكشن 1,2'), slot('الثلاثاء', 3, 'section', H(4)[0], 'سكشن 3,4'), slot('الأربعاء', 1, 'lecture', H(2)[0])],
-  },
-];
-
-// ---------- الفرقة الثانية — جدول حقيقي (Fall 2026-2027) ----------
-// الخانات اللي مفيهاش اسم مبنى افترضنا إنها مبنى 2، وقاعة الرسم 3 في مبنى 1 (مفيش قاعات رسم في مبنى 2)
-const Y2 = { year: 2, instructor: '' };
-const rm = (kind, b, n) => `B${b}-${kind}${n}`;
-const L2 = (code, ar, en, rows) => ({
-  ...Y2,
+// صف: [يوم، فترة، نوع، غرفة، مجموعة]
+const course = (code, name, year, rows) => ({
   code,
-  ar,
-  en,
-  sessions: rows.map(([day, p, kind, room, group]) => slot(day, p, kind, room, group)),
+  ar: name,
+  en: '',
+  year,
+  instructor: '',
+  sessions: rows.map(([day, p, kind, room, group]) => ({ day: D[day], start: PERIODS[p][0], end: PERIODS[p][1], kind, room, group: group || '' })),
 });
-const LEVEL2 = [
-  L2('L2-MA3', 'رياضيات 3', 'Mathematics III', [
-    ['الأحد', 1, 'lecture', rm('LH', 2, 1), 'سكشن 1-4'],
-    ['الأحد', 2, 'lecture', rm('LH', 2, 1), 'سكشن 5-8'],
-    ['الأحد', 1, 'section', rm('LH', 2, 3), 'سكشن 5,6'],
-    ['الأحد', 2, 'section', rm('LH', 2, 3), 'سكشن 1,2'],
-    ['الأحد', 4, 'section', rm('LH', 2, 1), 'سكشن 3,4'],
-    ['الاثنين', 4, 'section', rm('LAB', 2, 2), 'سكشن 7,8'],
+
+const COURSES = [
+  /* ================= Level One (مبنى 1) ================= */
+  course('L1-FCS', 'Fundamentals of Computer Science', 1, [
+    ['Mon', 1, L, 'B1-LH3', 'Group A · Sec 1:5'],
+    ['Mon', 2, L, 'B1-LH3', 'Group B · Sec 6:10'],
+    ['Tue', 2, B, 'B1-DR3', 'Sec/Lab 9'],
+    ['Tue', 3, S, 'B1-LH3', 'Sec/Lab 1,2'],
+    ['Tue', 4, S, 'B1-LH3', 'Sec/Lab 5,6'],
+    ['Tue', 1, B, 'B1-DR3', 'Sec/Lab 10'],
+    ['Wed', 3, S, 'B1-LH3', 'Sec/Lab 3,4'],
+    ['Thu', 4, S, 'B1-LH3', 'Sec/Lab 7,8'],
   ]),
-  L2('L2-LOG', 'منطق', 'Logic', [
-    ['الأحد', 1, 'lab', rm('LAB', 2, 2), 'سكشن/لاب 7'],
-    ['الأحد', 3, 'section', rm('LH', 2, 3), 'سكشن/لاب 1,2'],
-    ['الأحد', 3, 'lab', rm('LAB', 2, 2), 'سكشن/لاب 8'],
-    ['الاثنين', 4, 'section', rm('LH', 2, 4), 'سكشن/لاب 5,6'],
-    ['الأربعاء', 4, 'section', rm('LH', 2, 2), 'سكشن/لاب 3,4'],
+  course('L1-MA1', 'Mathematics I', 1, [
+    ['Mon', 2, S, 'B1-DR3', 'Sec 5'],
+    ['Mon', 1, S, 'B1-DR3', 'Sec 6'],
+    ['Mon', 4, S, 'B1-LH3', 'Sec 9,10'],
+    ['Wed', 4, S, 'B1-LH3', 'Sec 7,8'],
+    ['Thu', 1, L, 'B1-LH3', 'Group B · Sec 6:10'],
+    ['Thu', 2, L, 'B1-LH3', 'Group A · Sec 1:5'],
+    ['Thu', 3, S, 'B1-LH3', 'Sec 1,2'],
+    ['Thu', 4, S, 'B1-LH1', 'Sec 3,4'],
   ]),
-  L2('L2-NUM', 'تحليل عددي', 'Numerical Analysis', [
-    ['الأحد', 3, 'section', rm('LH', 2, 1), 'سكشن/لاب 3,4'],
-    ['الأحد', 3, 'lab', rm('DR', 1, 3), 'سكشن/لاب 5'],
-    ['الأحد', 4, 'lab', rm('DR', 1, 3), 'سكشن/لاب 6'],
-    ['الاثنين', 3, 'section', rm('LH', 2, 2), 'سكشن/لاب 7,8'],
-    ['الثلاثاء', 1, 'lecture', rm('LH', 2, 3), 'سكشن 5-8'],
-    ['الثلاثاء', 2, 'lecture', rm('LH', 2, 3), 'سكشن 1-4'],
-    ['الأربعاء', 4, 'section', rm('LH', 2, 4), 'سكشن/لاب 1,2'],
+  course('L1-PH1', 'Physics 1', 1, [
+    ['Mon', 1, S, 'B1-LH1', 'Sec 7,8'],
+    ['Mon', 2, S, 'B1-LH1', 'Sec 3,4'],
+    ['Tue', 2, S, 'B1-CR105', 'Sec 5'],
+    ['Tue', 3, S, 'B1-CR105', 'Sec 6'],
+    ['Wed', 1, L, 'B1-LH1', 'Group A · Sec 1:5'],
+    ['Wed', 2, L, 'B1-LH1', 'Group B · Sec 6:10'],
+    ['Wed', 3, S, 'B1-LH1', 'Sec 1,2'],
+    ['Wed', 4, S, 'B1-LH1', 'Sec 9,10'],
   ]),
-  L2('L2-SAD', 'تحليل وتصميم النظم', 'Systems Analysis and Design', [
-    ['الأحد', 4, 'section', rm('LH', 2, 3), 'سكشن/لاب 7,8'],
-    ['الاثنين', 3, 'section', rm('CR', 2, 101), 'سكشن/لاب 3,4'],
-    ['الاثنين', 4, 'section', rm('CR', 2, 101), 'سكشن/لاب 1,2'],
-    ['الثلاثاء', 1, 'lecture', rm('LH', 2, 1), 'سكشن 1-4'],
-    ['الثلاثاء', 2, 'lecture', rm('LH', 2, 1), 'سكشن 5-8'],
-    ['الأربعاء', 4, 'section', rm('CR', 2, 101), 'سكشن/لاب 5,6'],
+  course('L1-LAW', 'Principles of Law and Human Rights', 1, [['Mon', 3, L, 'B1-LH1', 'Weekly Group']]),
+  course('L1-PF', 'Programming Fundamentals', 1, [
+    ['Tue', 1, B, 'B1-LAB1', 'Sec/Lab 1'],
+    ['Tue', 2, B, 'B1-LAB1', 'Sec/Lab 7'],
+    ['Tue', 3, B, 'B1-LAB1', 'Sec/Lab 3'],
+    ['Tue', 4, B, 'B1-LAB1', 'Sec/Lab 9'],
+    ['Tue', 1, B, 'B1-LAB2', 'Sec/Lab 2'],
+    ['Tue', 2, B, 'B1-LAB2', 'Sec/Lab 8'],
+    ['Tue', 3, B, 'B1-LAB2', 'Sec/Lab 4'],
+    ['Tue', 4, B, 'B1-LAB2', 'Sec/Lab 10'],
+    ['Wed', 3, B, 'B1-LAB1', 'Sec/Lab 5'],
+    ['Wed', 3, B, 'B1-LAB2', 'Sec/Lab 6'],
+    ['Thu', 1, L, 'B1-LH1', 'Group A · Sec 1:5'],
+    ['Thu', 2, L, 'B1-LH1', 'Group B · Sec 6:10'],
   ]),
-  L2('L2-OOP', 'البرمجة كائنية التوجه', 'Object-Oriented Programming', [
-    ['الاثنين', 1, 'lecture', rm('LH', 2, 2), 'سكشن 1-4'],
-    ['الاثنين', 2, 'lecture', rm('LH', 2, 2), 'سكشن 5-8'],
-    ['الثلاثاء', 3, 'lab', rm('LAB', 1, 2), 'سكشن/لاب 1'],
-    ['الثلاثاء', 3, 'lab', rm('DR', 1, 3), 'سكشن/لاب 2'],
-    ['الثلاثاء', 4, 'lab', rm('LAB', 1, 2), 'سكشن/لاب 3'],
-    ['الثلاثاء', 4, 'lab', rm('DR', 1, 3), 'سكشن/لاب 4'],
-    ['الأربعاء', 1, 'lab', rm('LAB', 1, 2), 'سكشن/لاب 5'],
-    ['الأربعاء', 1, 'lab', rm('DR', 1, 3), 'سكشن/لاب 6'],
-    ['الأربعاء', 3, 'lab', rm('LAB', 1, 2), 'سكشن/لاب 7'],
-    ['الأربعاء', 3, 'lab', rm('DR', 1, 3), 'سكشن/لاب 8'],
+  course('L1-DM', 'Discrete Mathematics', 1, [
+    ['Mon', 4, S, 'B1-LH1', 'Sec 1,2'],
+    ['Tue', 1, S, 'B1-LAB2', 'Sec 3'],
+    ['Tue', 2, S, 'B1-LAB2', 'Sec 4'],
+    ['Tue', 4, S, 'B1-LH1', 'Sec 7,8'],
+    ['Tue', 3, S, 'B1-LH1', 'Sec 9,10'],
+    ['Wed', 1, L, 'B1-LH3', 'Group B · Sec 6:10'],
+    ['Wed', 2, L, 'B1-LH3', 'Group A · Sec 1:5'],
+    ['Thu', 3, S, 'B1-LH1', 'Sec 5,6'],
   ]),
-  L2('L2-LD', 'تصميم منطقي', 'Logic Design', [
-    ['الاثنين', 1, 'lecture', rm('LH', 2, 4), 'سكشن 5-8'],
-    ['الاثنين', 2, 'lecture', rm('LH', 2, 4), 'سكشن 1-4'],
+
+  /* ================= Level Two ================= */
+  course('L2-MA3', 'Mathematics III', 2, [
+    ['Sun', 1, L, 'B2-LH1', 'Sec 1:4'],
+    ['Sun', 2, L, 'B2-LH1', 'Sec 5:8'],
+    ['Sun', 1, S, 'B2-LH3', 'Sec 5,6'],
+    ['Sun', 2, S, 'B2-LH3', 'Sec 1,2'],
+    ['Sun', 4, S, 'B2-LH1', 'Sec 3,4'],
+    ['Mon', 4, S, 'B2-LAB2', 'Sec 7,8'],
   ]),
-  L2('L2-CS', 'مهارات الحاسب', 'Computer Skills', [['الأربعاء', 2, 'lecture', rm('LH', 2, 4), 'سكشن 1-8']]),
+  course('L2-LOG', 'Logic', 2, [
+    ['Sun', 1, B, 'B2-LAB2', 'Sec/Lab 7'],
+    ['Sun', 3, S, 'B2-LH3', 'Sec/Lab 1,2'],
+    ['Sun', 3, B, 'B2-LAB2', 'Sec/Lab 8'],
+    ['Mon', 4, S, 'B2-LH4', 'Sec/Lab 5,6'],
+    ['Wed', 4, S, 'B2-LH2', 'Sec/Lab 3,4'],
+  ]),
+  course('L2-NUM', 'Numerical Analysis', 2, [
+    ['Sun', 3, S, 'B2-LH1', 'Sec/Lab 3,4'],
+    ['Sun', 3, B, 'B1-DR3', 'Sec/Lab 5'],
+    ['Sun', 4, B, 'B1-DR3', 'Sec/Lab 6'],
+    ['Mon', 3, S, 'B2-LH2', 'Sec/Lab 7,8'],
+    ['Tue', 1, L, 'B2-LH3', 'Sec 5:8'],
+    ['Tue', 2, L, 'B2-LH3', 'Sec 1:4'],
+    ['Wed', 4, S, 'B2-LH4', 'Sec/Lab 1,2'],
+  ]),
+  course('L2-SAD', 'Systems Analysis and Design', 2, [
+    ['Sun', 4, S, 'B2-LH3', 'Sec/Lab 7,8'],
+    ['Mon', 3, S, 'B2-CR101', 'Sec/Lab 3,4'],
+    ['Mon', 4, S, 'B2-CR101', 'Sec/Lab 1,2'],
+    ['Tue', 1, L, 'B2-LH1', 'Sec 1:4'],
+    ['Tue', 2, L, 'B2-LH1', 'Sec 5:8'],
+    ['Wed', 4, S, 'B2-CR101', 'Sec/Lab 5,6'],
+  ]),
+  course('L2-OOP', 'Object-Oriented Programming', 2, [
+    ['Mon', 1, L, 'B2-LH2', 'Sec 1:4'],
+    ['Mon', 2, L, 'B2-LH2', 'Sec 5:8'],
+    ['Tue', 3, B, 'B1-LAB2', 'Sec/Lab 1'],
+    ['Tue', 3, B, 'B1-DR3', 'Sec/Lab 2'],
+    ['Tue', 4, B, 'B1-LAB2', 'Sec/Lab 3'],
+    ['Tue', 4, B, 'B1-DR3', 'Sec/Lab 4'],
+    ['Wed', 1, B, 'B1-LAB2', 'Sec/Lab 5'],
+    ['Wed', 1, B, 'B1-DR3', 'Sec/Lab 6'],
+    ['Wed', 3, B, 'B1-LAB2', 'Sec/Lab 7'],
+    ['Wed', 3, B, 'B1-DR3', 'Sec/Lab 8'],
+  ]),
+  course('L2-LD', 'Logic Design', 2, [
+    ['Mon', 1, L, 'B2-LH4', 'Sec 5:8'],
+    ['Mon', 2, L, 'B2-LH4', 'Sec 1:4'],
+  ]),
+  course('L2-CS', 'Computer Skills', 2, [['Wed', 2, L, 'B2-LH4', 'Sec 1:8']]),
+
+  /* ================= Level Three (مبنى 2) ================= */
+  course('L3-SOC', 'Societal Issues', 3, [['Mon', 2, L, 'B2-CR101', 'Weekly Group · GA (1,2) / GB (3,4)']]),
+  course('L3-ALG', 'Algorithms Design and Analysis', 3, [
+    ['Mon', 3, L, 'B2-LH4'],
+    ['Tue', 1, S, 'B2-LH2', 'Sec/Lab 3,4'],
+    ['Tue', 4, S, 'B2-LH4', 'Sec/Lab 1,2'],
+  ]),
+  course('L3-HIS', 'Introduction to History of Civilizations', 3, [['Mon', 4, L, 'B2-LH2']]),
+  course('L3-NET', 'Computer Networks', 3, [
+    ['Tue', 1, B, 'B2-LAB1', 'Sec/Lab 1'],
+    ['Tue', 2, B, 'B2-LAB1', 'Sec/Lab 3'],
+    ['Tue', 3, B, 'B2-LAB2', 'Sec/Lab 2'],
+    ['Tue', 4, B, 'B2-LAB2', 'Sec/Lab 4'],
+    ['Wed', 2, L, 'B2-LH2'],
+  ]),
+  course('L3-TOP', 'Selected Topics in C.S.', 3, [
+    ['Tue', 1, B, 'B2-LAB2', 'Sec/Lab 2'],
+    ['Tue', 2, B, 'B2-LAB2', 'Sec/Lab 4'],
+    ['Tue', 3, B, 'B2-LAB1', 'Sec/Lab 1'],
+    ['Tue', 4, B, 'B2-LAB1', 'Sec/Lab 3'],
+    ['Wed', 3, L, 'B2-LH4'],
+  ]),
+  course('L3-AI', 'Artificial Intelligence', 3, [
+    ['Tue', 2, S, 'B2-LH4', 'Sec/Lab 1,2'],
+    ['Tue', 3, S, 'B2-LH4', 'Sec/Lab 3,4'],
+    ['Wed', 1, L, 'B2-LH2'],
+  ]),
+
+  /* ================= Level Four (مبنى 1 — Room 205) ================= */
+  course('L4-IP', 'Image Processing', 4, [
+    ['Mon', 1, B, 'B1-LAB4', 'sec/Lab'],
+    ['Wed', 3, L, 'B1-LAB4'],
+  ]),
+  course('L4-DL', 'Deep Learning', 4, [
+    ['Mon', 2, B, 'B1-LAB4', 'sec/Lab'],
+    ['Wed', 1, L, 'B1-LAB4'],
+  ]),
+  course('L4-PC', 'Parallel Computation', 4, [
+    ['Mon', 3, L, 'B1-LAB4'],
+    ['Wed', 2, B, 'B1-LAB4', 'sec/Lab'],
+  ]),
+  course('L4-GP', 'Graduation Project I', 4, [
+    ['Mon', 4, S, 'B1-LAB4'],
+    ['Tue', 4, S, 'B1-LAB4'],
+    ['Wed', 4, S, 'B1-LAB4'],
+    ['Thu', 4, S, 'B1-LAB4'],
+  ]),
+  course('L4-CC', 'Cloud Computing', 4, [
+    ['Tue', 2, B, 'B1-LAB4', 'sec/Lab'],
+    ['Thu', 3, L, 'B1-LAB4'],
+  ]),
+  course('L4-TCC', 'Theory of Computation & Compilers', 4, [
+    ['Tue', 3, L, 'B1-LAB4'],
+    ['Thu', 2, B, 'B1-LAB4', 'sec/Lab'],
+  ]),
 ];
 
-const SAMPLE = [
-  // ---------- الفرقة الأولى (مبنى 1) ----------
-  { code: 'CS101', ar: 'أساسيات البرمجة', en: 'Programming Fundamentals', year: 1, instructor: 'د. أحمد سمير', sessions: [S('السبت', '09:00', '10:30', 'lecture', [1, 'LH', 1]), S('الاثنين', '11:00', '12:30', 'lab', [1, 'LAB', 1], 'G1')] },
-  { code: 'MA101', ar: 'تفاضل وتكامل 1', en: 'Calculus 1', year: 1, instructor: 'د. منى عبد الله', sessions: [S('السبت', '11:00', '12:30', 'lecture', [1, 'LH', 2]), S('الثلاثاء', '09:00', '10:30', 'section', [1, 'CR', 3])] },
-  { code: 'PH101', ar: 'فيزياء عامة', en: 'General Physics', year: 1, instructor: 'د. هاني فؤاد', sessions: [S('الأحد', '09:00', '10:30', 'lecture', [1, 'LH', 3]), S('الأربعاء', '11:00', '12:30', 'lab', [1, 'LAB', 2], 'G1')] },
-  { code: 'IT101', ar: 'مقدمة في تقنية المعلومات', en: 'Intro to IT', year: 1, instructor: 'د. سارة إبراهيم', sessions: [S('الأحد', '11:00', '12:30', 'lecture', [1, 'LH', 1]), S('الخميس', '09:00', '10:30', 'section', [1, 'CR', 1])] },
-  { code: 'EN101', ar: 'لغة إنجليزية', en: 'Technical English', year: 1, instructor: 'أ. نهى حسن', sessions: [S('الاثنين', '09:00', '10:30', 'lecture', [1, 'CR', 5])] },
-  { code: 'DR101', ar: 'رسم هندسي', en: 'Engineering Drawing', year: 1, instructor: 'م. طارق السيد', sessions: [S('الثلاثاء', '11:00', '14:00', 'lab', [1, 'DR', 3]), S('الخميس', '11:00', '12:30', 'lecture', [1, 'LH', 2])] },
-  { code: 'LD101', ar: 'تصميم منطقي', en: 'Logic Design', year: 1, instructor: 'د. وليد مصطفى', sessions: [S('الأربعاء', '09:00', '10:30', 'lecture', [1, 'LH', 4]), S('السبت', '13:00', '14:30', 'lab', [1, 'LAB', 3], 'G2')] },
-
-  ...LEVEL2,
-  ...LEVEL3,
-
-  // ---------- الفرقة الرابعة (مبنى 2) ----------
-  { code: 'CS401', ar: 'تعلم الآلة', en: 'Machine Learning', year: 4, instructor: 'د. كريم صلاح', sessions: [S('السبت', '09:00', '10:30', 'lecture', [2, 'LH', 4]), S('الأحد', '11:00', '12:30', 'lab', [2, 'LAB', 7], 'G1')] },
-  { code: 'CS402', ar: 'أمن المعلومات', en: 'Information Security', year: 4, instructor: 'د. ماجد سعيد', sessions: [S('الأحد', '13:00', '14:30', 'lecture', [2, 'LH', 2]), S('الثلاثاء', '09:00', '10:30', 'lab', [2, 'LAB', 3], 'G2')] },
-  { code: 'CS403', ar: 'الحوسبة السحابية', en: 'Cloud Computing', year: 4, instructor: 'د. لمياء حمدي', sessions: [S('الاثنين', '11:00', '12:30', 'lecture', [2, 'LH', 3]), S('الأربعاء', '11:00', '12:30', 'lab', [2, 'LAB', 2], 'G1')] },
-  { code: 'CS404', ar: 'معالجة الصور', en: 'Image Processing', year: 4, instructor: 'د. أحمد سمير', sessions: [S('الثلاثاء', '11:00', '12:30', 'lecture', [2, 'LH', 1])] },
-  { code: 'CS499', ar: 'مشروع التخرج', en: 'Graduation Project', year: 4, instructor: 'لجنة المشاريع', sessions: [S('الخميس', '09:00', '12:30', 'section', [2, 'CR', 1])] },
-];
-
-// تحويل الجلسات إلى صيغة موحّدة بمعرّف الغرفة
+// تحويل الجلسات إلى صيغة موحّدة بمعرّف الغرفة (الغرف اللي مش موجودة بتتشال)
 function normalize(courses) {
-  const out = [];
-  courses.forEach((c) => {
-    const sessions = [];
-    c.sessions.forEach((s) => {
-      let room = null;
-      if (Array.isArray(s.room)) room = pickRoom(s.room[0], s.room[1], s.room[2]);
-      else if (typeof s.room === 'string') room = findRoom(s.room);
-      if (!room) return;
-      sessions.push({ day: s.day, start: s.start, end: s.end, kind: s.kind || 'lecture', group: s.group || '', roomId: room.id });
-    });
-    out.push({ code: c.code, ar: c.ar, en: c.en || '', year: Number(c.year), instructor: c.instructor || '', sessions });
-  });
-  return out;
+  return courses.map((c) => ({
+    code: c.code,
+    ar: c.ar,
+    en: c.en || '',
+    year: Number(c.year),
+    instructor: c.instructor || '',
+    sessions: c.sessions
+      .map((s) => {
+        const room = findRoom(s.room);
+        return room ? { day: s.day, start: s.start, end: s.end, kind: s.kind || 'lecture', group: s.group || '', roomId: room.id } : null;
+      })
+      .filter(Boolean),
+  }));
 }
 
 const KEY = 'campus3d.schedule.v1';
@@ -165,15 +222,9 @@ export function loadCourses() {
     const raw = localStorage.getItem(KEY);
     if (raw) return normalize(JSON.parse(raw));
   } catch {}
-  return normalize(SAMPLE);
+  return normalize(COURSES);
 }
-export const isSample = () => {
-  try {
-    return !localStorage.getItem(KEY);
-  } catch {
-    return true;
-  }
-};
+export const isSample = () => false;
 export function saveImported(courses) {
   localStorage.setItem(KEY, JSON.stringify(courses));
 }
@@ -190,7 +241,7 @@ export function parseCSV(text) {
   lines.forEach((ln) => {
     const c = ln.split(',').map((x) => x.trim());
     const code = c[idx('code')];
-    if (!map.has(code)) map.set(code, { code, ar: c[idx('name_ar')], en: c[idx('name_en')] || '', year: c[idx('year')], instructor: c[idx('instructor')] || '', sessions: [] });
+    if (!map.has(code)) map.set(code, { code, ar: c[idx('name_en')] || c[idx('name_ar')], en: '', year: c[idx('year')], instructor: c[idx('instructor')] || '', sessions: [] });
     map.get(code).sessions.push({ day: c[idx('day')], start: c[idx('start')], end: c[idx('end')], kind: c[idx('kind')] || 'lecture', room: c[idx('room')], group: c[idx('group')] || '' });
   });
   return [...map.values()];
