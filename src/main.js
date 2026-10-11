@@ -158,10 +158,7 @@ document.querySelectorAll('#topbar .views button').forEach((btn) => {
     else enterBuilding(Number(v.slice(1)), 0);
   };
 });
-$('#btnDims').onclick = (e) => {
-  document.body.classList.toggle('hide-dims');
-  e.currentTarget.classList.toggle('on', !document.body.classList.contains('hide-dims'));
-};
+document.body.classList.add('hide-dims'); // أسماء الغرف بس، والأبعاد بتظهر لما تختار غرفة
 
 /* ======================= أبعاد الغرفة ======================= */
 let dimGroup = null;
@@ -238,19 +235,12 @@ function buildChips() {
     };
     yc.appendChild(b);
   });
-  const dc = $('#dayChips');
-  dc.innerHTML = '';
-  DAYS.forEach((d) => {
-    const b = document.createElement('button');
-    b.className = 'chip';
-    b.textContent = d;
-    b.onclick = () => {
-      S.day = S.day === d ? null : d;
-      dc.querySelectorAll('.chip').forEach((x) => x.classList.toggle('on', x.textContent === S.day));
-      renderResults();
-    };
-    dc.appendChild(b);
-  });
+  const dsel = $('#dayFilter');
+  DAYS.forEach((d) => dsel.add(new Option(d, d)));
+  dsel.onchange = () => {
+    S.day = dsel.value || null;
+    renderResults();
+  };
 }
 
 function renderResults() {
@@ -258,7 +248,7 @@ function renderResults() {
   $('#detail').hidden = true;
   box.hidden = false;
   $('#sampleNote').hidden = !isSample();
-  $('#noteText').innerHTML = 'جدول <b>الفرقة الثالثة</b> حقيقي (فصل الخريف 2026-2027) — باقي الفرق <b>تجريبية</b>. استورد باقي الجداول من زر «الجداول».';
+  $('#noteText').innerHTML = 'جدول <b>الفرقتين الثانية والثالثة</b> حقيقي (خريف 2026-2027). الأولى والرابعة <b>تجريبية</b> لحد ما تبعتوا جداولهم.';
   const q = norm(S.q);
   const tokens = q.split(/\s+/).filter(Boolean);
   const rooms = Object.values(BUILDINGS).flatMap((b) => b.rooms);
@@ -339,14 +329,12 @@ function roomScheduleHTML(r) {
 }
 
 function factsHTML(r) {
-  return `<div class="facts">
-    <div class="fact"><b>${r.w.toFixed(1)} × ${r.d.toFixed(1)}</b><span>الأبعاد (م)</span></div>
-    <div class="fact"><b>${r.area.toFixed(0)} م²</b><span>المساحة</span></div>
-    <div class="fact"><b>${r.capacity ? '~' + r.capacity : '—'}</b><span>السعة (فرد)</span></div></div>`;
+  return `<div class="dimline">${r.w.toFixed(1)} × ${r.d.toFixed(1)} م${r.capacity ? ` · حوالي ${r.capacity} فرد` : ''}</div>`;
 }
 
 function showRoomDetail(r) {
   $('#results').hidden = true;
+  $('#sampleNote').hidden = true;
   const d = $('#detail');
   d.hidden = false;
   d.innerHTML = `<button class="back">${ic('back')} رجوع للبحث</button>
@@ -362,26 +350,32 @@ function showDestination(room, course) {
   S.room = room;
   const d = $('#detail');
   $('#results').hidden = true;
+  $('#sampleNote').hidden = true;
   d.hidden = false;
   S.course = course ? S.course : null;
   const render = () => {
     const r = router.route(startKey, room);
     S.route = r;
     drawRoute(r);
-    d.innerHTML = `<button class="back">${ic('back')} رجوع للبحث</button>
-      <h3>${course ? course.ar : room.nameAr}</h3>
-      <div class="sub">${course ? `${S.course?.day || ''} ${S.course?.start || ''} · ` : ''}${roomLabel(room)}</div>
-      ${factsHTML(room)}
-      <div class="fromrow">${ic('pin')} نقطة البداية:
-        <select id="startSel">
-          <option value="gate" ${startKey === 'gate' ? 'selected' : ''}>البوابة الرئيسية</option>
-          <option value="B1" ${startKey === 'B1' ? 'selected' : ''}>مدخل مبنى 1</option>
-          <option value="B2" ${startKey === 'B2' ? 'selected' : ''}>مدخل مبنى 2</option>
-        </select></div>
-      <button class="cta" id="tourBtn">${ic('walk')} ابدأ جولة المشي ثلاثية الأبعاد</button>
-      <button class="cta alt" id="viewBtn">${ic('map')} اعرض الغرفة على الخريطة</button>
-      <div style="margin-top:8px;font-size:12px;color:#5b6785">المسافة تقريباً <b>${Math.round(r.length)} م</b> · ${Math.max(1, Math.round(r.length / 75))} دقيقة مشي</div>
-      <ol class="steps">${r.steps.map((s, i) => `<li data-i="${i}"><span class="ic">${ICONS[s.icon] || '•'}</span><span>${s.text}</span></li>`).join('')}</ol>`;
+    const mins = Math.max(1, Math.round(r.length / 75));
+    d.innerHTML = `<button class="back">${ic('back')} رجوع</button>
+      <div class="dest">
+        <div class="dest-title">${course ? course.ar : room.nameAr}</div>
+        <div class="pills"><span>${ic('building')} مبنى ${room.building}</span><span>${FLOOR_NAMES[room.floor]}</span><span>${room.nameAr}</span></div>
+        ${course ? `<div class="sub">${S.course?.day || ''} ${S.course?.start || ''}</div>` : ''}
+      </div>
+      <button class="cta" id="tourBtn">${ic('walk')} ابدأ الجولة · ${mins} دقيقة مشي</button>
+      <div class="mini-row">
+        <label>من <select id="startSel">
+          <option value="gate" ${startKey === 'gate' ? 'selected' : ''}>البوابة</option>
+          <option value="B1" ${startKey === 'B1' ? 'selected' : ''}>مبنى 1</option>
+          <option value="B2" ${startKey === 'B2' ? 'selected' : ''}>مبنى 2</option>
+        </select></label>
+        <button class="link" id="viewBtn">${ic('map')} على الخريطة</button>
+      </div>
+      <details class="stepsbox"><summary>خطوات الطريق</summary>
+        <ol class="steps">${r.steps.map((s, i) => `<li data-i="${i}"><span class="ic">${ICONS[s.icon] || '•'}</span><span>${s.text}</span></li>`).join('')}</ol>
+      </details>`;
     d.querySelector('.back').onclick = backToSearch;
     d.querySelector('#startSel').onchange = (e) => {
       startKey = e.target.value;

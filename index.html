@@ -28,7 +28,7 @@
           <button data-view="b2"><i data-ic="building"></i><span class="lbl"> مبنى</span> 2</button>
         </nav>
         <div class="tools">
-          <button id="btnDims" class="on" title="إظهار/إخفاء أبعاد الغرف"><i data-ic="ruler"></i><span class="lbl"> الأبعاد</span></button>
+          
           <button id="btnImport" title="استيراد الجداول"><i data-ic="calendar"></i><span class="lbl"> الجداول</span></button>
         </div>
       </header>
@@ -40,8 +40,8 @@
             <span class="ico" data-ic="search"></span>
             <input id="q" type="search" placeholder="دوّر على مادة أو دكتور أو قاعة…" autocomplete="off" />
           </div>
-          <div class="chips" id="yearChips"></div>
-          <div class="chips small" id="dayChips"></div>
+          <div class="filters"><div class="chips" id="yearChips"></div></div>
+          <select id="dayFilter" aria-label="اليوم"><option value="">كل الأيام</option></select>
           <div id="sampleNote" class="note"><i data-ic="alert"></i> <span id="noteText"></span></div>
           <div id="results"></div>
           <div id="detail" hidden></div>
