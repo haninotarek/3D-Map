@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>خريطة الكلية 3D</title>
+    <meta name="description" content="خريطة ثلاثية الأبعاد تفاعلية لكلية علوم الحاسب وتقنية المعلومات — جامعة شرق بورسعيد الأهلية" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏛️%3C/text%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="stage"></div>
+
+      <header id="topbar">
+        <div class="brand">
+          <span class="logo">🏛️</span>
+          <div>
+            <b>خريطة الكلية 3D</b>
+            <small>علوم الحاسب وتقنية المعلومات · جامعة شرق بورسعيد الأهلية</small>
+          </div>
+        </div>
+        <nav class="views">
+          <button data-view="campus" class="on">🌍<span class="lbl"> الحرم</span></button>
+          <button data-view="b1">🏢<span class="lbl"> مبنى</span> 1</button>
+          <button data-view="b2">🏢<span class="lbl"> مبنى</span> 2</button>
+        </nav>
+        <div class="tools">
+          <button id="btnDims" class="on" title="إظهار/إخفاء أبعاد الغرف">📐<span class="lbl"> الأبعاد</span></button>
+          <button id="btnImport" title="استيراد الجداول">📥<span class="lbl"> الجداول</span></button>
+        </div>
+      </header>
+
+      <aside id="panel">
+        <button id="panelToggle" aria-label="طي القائمة"><span></span></button>
+        <div id="panelBody">
+          <div class="search">
+            <span class="ico">🔎</span>
+            <input id="q" type="search" placeholder="دوّر على مادة أو دكتور أو قاعة…" autocomplete="off" />
+          </div>
+          <div class="chips" id="yearChips"></div>
+          <div class="chips small" id="dayChips"></div>
+          <div id="sampleNote" class="note">⚠️ الجداول الحالية <b>تجريبية</b> — استورد جدولكم الحقيقي من زر «الجداول».</div>
+          <div id="results"></div>
+          <div id="detail" hidden></div>
+        </div>
+      </aside>
+
+      <div id="floors" hidden></div>
+      <div id="legend"></div>
+
+      <div id="subtitle" hidden></div>
+      <div id="tourbar" hidden>
+        <button id="tPlay">⏸</button>
+        <input id="tSeek" type="range" min="0" max="1000" value="0" />
+        <button id="tSpeed">×1</button>
+        <button id="tExit">إنهاء الجولة ✕</button>
+      </div>
+
+      <div id="toast" hidden></div>
+
+      <div id="modal" hidden>
+        <div class="card">
+          <button class="x" id="mClose">✕</button>
+          <h3>استيراد جدول المحاضرات</h3>
+          <p>ارفع ملف <b>CSV</b> أو <b>JSON</b> بجداول الفرق الأربعة. الأعمدة المطلوبة:</p>
+          <code dir="ltr">code,name_ar,name_en,year,instructor,day,start,end,kind,room,group</code>
+          <p class="hint">
+            <b>room</b> = كود الغرفة مثل <code dir="ltr">B2-LH3</code> (مبنى 2 قاعة محاضرات 3) أو <code dir="ltr">B1-LAB2</code>.
+            <b>kind</b> = lecture | section | lab. الأيام بالعربي (السبت…الخميس).
+          </p>
+          <input type="file" id="mFile" accept=".csv,.json" />
+          <div class="row">
+            <button id="mSample">⬇️ تحميل ملف CSV نموذجي</button>
+            <button id="mReset">↩️ الرجوع للبيانات التجريبية</button>
+          </div>
+          <details>
+            <summary>أكواد الغرف المتاحة</summary>
+            <div id="roomCodes"></div>
+          </details>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
