@@ -1,4 +1,5 @@
 import './style.css';
+import { ic, hydrateIcons } from './icons.js';
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { createWorld, createTween } from './world.js';
@@ -142,7 +143,7 @@ function buildFloorButtons() {
   }
   const ex = document.createElement('button');
   ex.className = 'exit';
-  ex.textContent = '↩ خروج';
+  ex.innerHTML = ic('exit') + ' خروج';
   ex.onclick = viewCampus;
   box.appendChild(ex);
 }
@@ -257,6 +258,7 @@ function renderResults() {
   $('#detail').hidden = true;
   box.hidden = false;
   $('#sampleNote').hidden = !isSample();
+  $('#noteText').innerHTML = 'جدول <b>الفرقة الثالثة</b> حقيقي (فصل الخريف 2026-2027) — باقي الفرق <b>تجريبية</b>. استورد باقي الجداول من زر «الجداول».';
   const q = norm(S.q);
   const tokens = q.split(/\s+/).filter(Boolean);
   const rooms = Object.values(BUILDINGS).flatMap((b) => b.rooms);
@@ -273,30 +275,30 @@ function renderResults() {
   if (tokens.length) {
     const rm = rooms.filter((r) => tokens.every((t) => norm(`${r.nameAr} ${r.nameEn} ${r.id} مبنى ${r.building}`).includes(t))).slice(0, 6);
     if (rm.length) {
-      html.push('<div class="group-title">🚪 الغرف</div>');
+      html.push(`<div class="group-title">${ic('door')} الغرف</div>`);
       rm.forEach((r) => {
         html.push(`<button class="roomcard" data-room="${r.id}"><i style="background:${TYPES[r.type].color}"></i><div><b>${r.nameAr} <small>${r.nameEn}</small></b><small>مبنى ${r.building} · ${FLOOR_NAMES[r.floor]} · ${r.w.toFixed(1)}×${r.d.toFixed(1)} م</small></div></button>`);
       });
     }
   }
-  if (list.length) html.push('<div class="group-title">📚 المواد</div>');
+  if (list.length) html.push(`<div class="group-title">${ic('book')} المواد</div>`);
   list.forEach((c) => {
     const ss = c.sessions.filter((s) => !S.day || s.day === S.day);
     if (!ss.length) return;
     ss.sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || toMinutes(a.start) - toMinutes(b.start));
     html.push(`<div class="course"><h4><span>${c.ar}</span><small>${c.code}</small></h4>
-      <div class="meta">${c.en ? c.en + ' · ' : ''}${YEARS.find((y) => y.n === c.year)?.label} · ${c.instructor}</div>
+      <div class="meta">${[c.en, YEARS.find((y) => y.n === c.year)?.label, c.instructor].filter(Boolean).join(' · ')}</div>
       ${ss
         .map((s) => {
           const r = findRoom(s.roomId);
           return `<button class="sess" data-course="${c.code}" data-room="${s.roomId}" data-day="${s.day}" data-start="${s.start}">
           <span class="badge" style="background:${KINDS[s.kind]?.color || '#666'}">${KINDS[s.kind]?.ar || s.kind}</span>
           <span><span class="when">${s.day} ${s.start}–${s.end}${s.group ? ' · ' + s.group : ''}</span><br><span class="where">${r.nameAr} · مبنى ${r.building} · ${FLOOR_NAMES[r.floor]}</span></span>
-          <span class="go">وديني ←</span></button>`;
+          <span class="go">وديني ${ic('go')}</span></button>`;
         })
         .join('')}</div>`);
   });
-  if (!html.length) html.push('<div class="empty">مفيش نتائج 🤷‍♂️<br>جرّب كلمة تانية أو شيل الفلاتر</div>');
+  if (!html.length) html.push(`<div class="empty">${ic('searchx','2em')}<br>مفيش نتائج<br>جرّب كلمة تانية أو شيل الفلاتر</div>`);
   box.innerHTML = html.join('');
   box.querySelectorAll('.sess').forEach((el) => {
     el.onclick = () => {
@@ -318,7 +320,7 @@ $('#q').addEventListener('input', (e) => {
 });
 
 /* ======================= لوحة التفاصيل ======================= */
-const ICONS = { gate: '🚪', door: '🏛️', walk: '🚶', right: '↱', left: '↰', up: '🪜', down: '🪜', pin: '📍' };
+const ICONS = { gate: ic('door'), door: ic('landmark'), walk: ic('walk'), right: ic('right'), left: ic('left'), up: ic('up'), down: ic('down'), pin: ic('pin') };
 let startKey = 'gate';
 
 function sessionsOfRoom(roomId) {
@@ -347,11 +349,11 @@ function showRoomDetail(r) {
   $('#results').hidden = true;
   const d = $('#detail');
   d.hidden = false;
-  d.innerHTML = `<button class="back">→ رجوع للبحث</button>
+  d.innerHTML = `<button class="back">${ic('back')} رجوع للبحث</button>
     <h3>${r.nameAr}</h3><div class="sub">${r.nameEn} · مبنى ${r.building} · ${FLOOR_NAMES[r.floor]}</div>
     ${factsHTML(r)}
-    <button class="cta" id="goHere">🧭 وديني للقاعة دي</button>
-    <div class="sched"><h5>📅 محاضرات القاعة</h5>${roomScheduleHTML(r)}</div>`;
+    <button class="cta" id="goHere">${ic('nav')} وديني للقاعة دي</button>
+    <div class="sched"><h5>${ic('calendar')} محاضرات القاعة</h5>${roomScheduleHTML(r)}</div>`;
   d.querySelector('.back').onclick = backToSearch;
   d.querySelector('#goHere').onclick = () => showDestination(r, null);
 }
@@ -366,18 +368,18 @@ function showDestination(room, course) {
     const r = router.route(startKey, room);
     S.route = r;
     drawRoute(r);
-    d.innerHTML = `<button class="back">→ رجوع للبحث</button>
+    d.innerHTML = `<button class="back">${ic('back')} رجوع للبحث</button>
       <h3>${course ? course.ar : room.nameAr}</h3>
       <div class="sub">${course ? `${S.course?.day || ''} ${S.course?.start || ''} · ` : ''}${roomLabel(room)}</div>
       ${factsHTML(room)}
-      <div class="fromrow">📍 نقطة البداية:
+      <div class="fromrow">${ic('pin')} نقطة البداية:
         <select id="startSel">
           <option value="gate" ${startKey === 'gate' ? 'selected' : ''}>البوابة الرئيسية</option>
           <option value="B1" ${startKey === 'B1' ? 'selected' : ''}>مدخل مبنى 1</option>
           <option value="B2" ${startKey === 'B2' ? 'selected' : ''}>مدخل مبنى 2</option>
         </select></div>
-      <button class="cta" id="tourBtn">🚶 ابدأ جولة المشي ثلاثية الأبعاد</button>
-      <button class="cta alt" id="viewBtn">🗺️ اعرض الغرفة على الخريطة</button>
+      <button class="cta" id="tourBtn">${ic('walk')} ابدأ جولة المشي ثلاثية الأبعاد</button>
+      <button class="cta alt" id="viewBtn">${ic('map')} اعرض الغرفة على الخريطة</button>
       <div style="margin-top:8px;font-size:12px;color:#5b6785">المسافة تقريباً <b>${Math.round(r.length)} م</b> · ${Math.max(1, Math.round(r.length / 75))} دقيقة مشي</div>
       <ol class="steps">${r.steps.map((s, i) => `<li data-i="${i}"><span class="ic">${ICONS[s.icon] || '•'}</span><span>${s.text}</span></li>`).join('')}</ol>`;
     d.querySelector('.back').onclick = backToSearch;
@@ -502,7 +504,7 @@ function drawRoute(r) {
     routeParts.push(g);
   };
   mkPin(first, r.startKey === 'gate' ? 'البداية: البوابة' : `البداية: مبنى ${r.startKey.slice(1)}`, 'start');
-  mkPin(last, `🎯 ${r.room.nameAr}`, '');
+  mkPin(last, r.room.nameAr, '');
   // نقطة "أنت"
   marker = new THREE.Mesh(new THREE.SphereGeometry(0.7, 20, 16), new THREE.MeshBasicMaterial({ color: '#fff' }));
   marker.renderOrder = 40;
@@ -563,7 +565,7 @@ function startTour(r) {
   world.setShadowFocus(p0.x, p0.z, 120);
   $('#tourbar').hidden = false;
   $('#subtitle').hidden = false;
-  $('#tPlay').textContent = '⏸';
+  $('#tPlay').innerHTML = ic('pause');
   document.body.classList.add('touring');
   if (window.innerWidth < 900) $('#panel').classList.add('collapsed');
   updateRouteVisibility();
@@ -614,7 +616,7 @@ function updateTour(dt) {
     T.s = Math.min(T.len, T.s + speed * dt);
     if (T.s >= T.len) {
       T.playing = false;
-      $('#tPlay').textContent = '↺';
+      $('#tPlay').innerHTML = ic('replay');
     }
   }
   const pos = samplePath(T.s);
@@ -665,7 +667,7 @@ function updateTour(dt) {
 $('#tPlay').onclick = () => {
   if (T.s >= T.len - 0.01) T.s = 0;
   T.playing = !T.playing;
-  $('#tPlay').textContent = T.playing ? '⏸' : '▶';
+  $('#tPlay').innerHTML = T.playing ? ic('pause') : ic('play');
 };
 $('#tSpeed').onclick = () => {
   T.speed = T.speed >= 3 ? 1 : T.speed + 1;
@@ -674,7 +676,7 @@ $('#tSpeed').onclick = () => {
 $('#tSeek').oninput = (e) => {
   T.s = (Number(e.target.value) / 1000) * T.len;
   T.playing = false;
-  $('#tPlay').textContent = '▶';
+  $('#tPlay').innerHTML = ic('play');
   T.inside = null;
 };
 $('#tExit').onclick = () => stopTour(false);
@@ -756,7 +758,7 @@ function setupImport() {
       courses = loadCourses();
       const n = courses.reduce((a, c) => a + c.sessions.length, 0);
       $('#modal').hidden = true;
-      toast(`تم استيراد ${courses.length} مادة (${n} محاضرة) ✅`);
+      toast(`تم استيراد ${courses.length} مادة (${n} محاضرة)`);
       renderResults();
     } catch (err) {
       toast('الملف مش مظبوط: ' + err.message, 4000);
@@ -786,6 +788,7 @@ $('#panelToggle').onclick = () => $('#panel').classList.toggle('collapsed');
 if (window.innerWidth < 900) $('#panel').classList.add('collapsed');
 $('#q').addEventListener('focus', () => $('#panel').classList.remove('collapsed'));
 
+hydrateIcons();
 buildChips();
 renderResults();
 buildLegend();

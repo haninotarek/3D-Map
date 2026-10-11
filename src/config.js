@@ -30,7 +30,7 @@ export const FLOOR_SHORT = ['أرضي', '1', '2', '3'];
 
 // موقع المبنيين (مركز البصمة) على الخريطة — من صورة القمر الصناعي
 // swap: لو المبنى 1 هو اللي على اليمين خلّي true
-const SWAP = false;
+const SWAP = true;
 const left = { ...px2world(520, 434) };
 const right = { ...px2world(712, 434) };
 export const BUILDINGS_POS = {

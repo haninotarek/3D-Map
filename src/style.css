@@ -865,3 +865,21 @@ body.hide-dims .room-label i {
     padding: 7px 8px;
   }
 }
+
+.ic-svg{vertical-align:-0.18em;flex:none}
+.brand .logo{display:grid;place-items:center;color:var(--accent)}
+.steps .ic .ic-svg{width:18px;height:18px}
+.steps li.on .ic{color:#fff}
+#tourbar button{display:grid;place-items:center}
+#modal .x{display:grid;place-items:center}
+.search .ico{display:grid}
+.note{display:flex;gap:6px;align-items:flex-start}
+.note .ic-svg{margin-top:3px;color:#b7791f}
+.back,.cta{display:flex;align-items:center;justify-content:center;gap:8px}
+.back{width:fit-content}
+.views button,.tools button{display:inline-flex;align-items:center;gap:4px}
+#floors .exit{display:flex;align-items:center;justify-content:center;gap:4px;width:58px}
+.empty .ic-svg{opacity:.5}
+.group-title{display:flex;align-items:center;gap:6px}
+.course .go{display:flex;align-items:center;gap:4px}
+#modal .row button{display:inline-flex;gap:6px;align-items:center}

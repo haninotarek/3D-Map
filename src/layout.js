@@ -68,9 +68,15 @@ export function buildLayout(bid) {
   const rooms = [];
   const floors = [];
 
-  const nameRoom = (type) => {
+  const nameRoom = (type, level) => {
     const t = TYPES[type];
     if (!t.numbered) return { ar: t.ar, en: t.en, num: null };
+    if (type === 'CR') {
+      // الفصول بترقيم الدور: 101 = أول فصل في الدور الأول
+      counters[`CR${level}`] = (counters[`CR${level}`] || 0) + 1;
+      const n = level * 100 + counters[`CR${level}`];
+      return { ar: `فصل ${n}`, en: `Room ${n}`, num: n };
+    }
     counters[type] = (counters[type] || 0) + 1;
     const n = counters[type];
     return { ar: `${t.ar} ${n}`, en: `${t.en} ${n}`, num: n };
@@ -129,7 +135,7 @@ export function buildLayout(bid) {
     floors.push(fl);
 
     function addRoom(type, rect, door, wing, row) {
-      const nm = nameRoom(type);
+      const nm = nameRoom(type, level);
       const room = {
         id: `B${bid}-${type}${nm.num ?? ''}${nm.num ? '' : `-F${level}${wing}${row}`}`,
         building: bid,

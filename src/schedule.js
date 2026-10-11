@@ -19,6 +19,45 @@ export const KINDS = {
 
 const S = (day, start, end, kind, room, group) => ({ day, start, end, kind, room, group });
 
+// ---------- الفرقة الثالثة — جدول حقيقي (Fall 2026-2027، مبنى هندسة 2) ----------
+const P = { 1: ['10:00', '11:15'], 2: ['11:20', '12:30'], 3: ['12:35', '13:45'], 4: ['13:50', '15:00'] };
+const slot = (day, p, kind, room, group) => S(day, P[p][0], P[p][1], kind, room, group);
+const H = (n) => ['B2-LH' + n];
+const LAB = (n) => ['B2-LAB' + n];
+const Y3 = { year: 3, instructor: '', real: true };
+const LEVEL3 = [
+  { ...Y3, code: 'L3-SOC', ar: 'قضايا مجتمعية', en: 'Societal Issues', sessions: [slot('الاثنين', 2, 'lecture', 'B2-CR101', 'مجموعة أسبوعية: GA (1,2) / GB (3,4)')] },
+  {
+    ...Y3, code: 'L3-ALG', ar: 'تصميم وتحليل الخوارزميات', en: 'Algorithms Design and Analysis',
+    sessions: [slot('الاثنين', 3, 'lecture', H(4)[0]), slot('الثلاثاء', 1, 'section', H(2)[0], 'سكشن 3,4'), slot('الثلاثاء', 4, 'section', H(4)[0], 'سكشن 1,2')],
+  },
+  { ...Y3, code: 'L3-HIS', ar: 'مقدمة في تاريخ الحضارات', en: 'Introduction to History of Civilizations', sessions: [slot('الاثنين', 4, 'lecture', H(2)[0])] },
+  {
+    ...Y3, code: 'L3-NET', ar: 'شبكات الحاسب', en: 'Computer Networks',
+    sessions: [
+      slot('الثلاثاء', 1, 'lab', LAB(1)[0], 'سكشن/لاب 1'),
+      slot('الثلاثاء', 2, 'lab', LAB(1)[0], 'سكشن/لاب 3'),
+      slot('الثلاثاء', 3, 'lab', LAB(2)[0], 'سكشن/لاب 2'),
+      slot('الثلاثاء', 4, 'lab', LAB(2)[0], 'سكشن/لاب 4'),
+      slot('الأربعاء', 2, 'lecture', H(2)[0]),
+    ],
+  },
+  {
+    ...Y3, code: 'L3-TOP', ar: 'موضوعات مختارة في علوم الحاسب', en: 'Selected Topics in C.S.',
+    sessions: [
+      slot('الثلاثاء', 1, 'lab', LAB(2)[0], 'سكشن/لاب 2'),
+      slot('الثلاثاء', 2, 'lab', LAB(2)[0], 'سكشن/لاب 4'),
+      slot('الثلاثاء', 3, 'lab', LAB(1)[0], 'سكشن/لاب 1'),
+      slot('الثلاثاء', 4, 'lab', LAB(1)[0], 'سكشن/لاب 3'),
+      slot('الأربعاء', 3, 'lecture', H(4)[0]),
+    ],
+  },
+  {
+    ...Y3, code: 'L3-AI', ar: 'الذكاء الاصطناعي', en: 'Artificial Intelligence',
+    sessions: [slot('الثلاثاء', 2, 'section', H(4)[0], 'سكشن 1,2'), slot('الثلاثاء', 3, 'section', H(4)[0], 'سكشن 3,4'), slot('الأربعاء', 1, 'lecture', H(2)[0])],
+  },
+];
+
 const SAMPLE = [
   // ---------- الفرقة الأولى (مبنى 1) ----------
   { code: 'CS101', ar: 'أساسيات البرمجة', en: 'Programming Fundamentals', year: 1, instructor: 'د. أحمد سمير', sessions: [S('السبت', '09:00', '10:30', 'lecture', [1, 'LH', 1]), S('الاثنين', '11:00', '12:30', 'lab', [1, 'LAB', 1], 'G1')] },
@@ -37,13 +76,7 @@ const SAMPLE = [
   { code: 'IT201', ar: 'قواعد البيانات', en: 'Database Systems', year: 2, instructor: 'د. رشا عمر', sessions: [S('الأربعاء', '11:00', '12:30', 'lecture', [2, 'LH', 1]), S('السبت', '11:00', '12:30', 'lab', [2, 'LAB', 3], 'G2')] },
   { code: 'ST201', ar: 'احتمالات وإحصاء', en: 'Probability & Statistics', year: 2, instructor: 'د. أمل شوقي', sessions: [S('الاثنين', '11:00', '12:30', 'lecture', [1, 'LH', 2])] },
 
-  // ---------- الفرقة الثالثة (مبنى 2) ----------
-  { code: 'CS301', ar: 'تصميم وتحليل الخوارزميات', en: 'Algorithms', year: 3, instructor: 'د. محمود رضا', sessions: [S('السبت', '11:00', '12:30', 'lecture', [2, 'LH', 3]), S('الاثنين', '13:00', '14:30', 'section', [2, 'CR', 4])] },
-  { code: 'CS302', ar: 'نظم التشغيل', en: 'Operating Systems', year: 3, instructor: 'د. هبة كمال', sessions: [S('الأحد', '09:00', '10:30', 'lecture', [2, 'LH', 2]), S('الثلاثاء', '11:00', '12:30', 'lab', [2, 'LAB', 4], 'G1')] },
-  { code: 'CS303', ar: 'شبكات الحاسب', en: 'Computer Networks', year: 3, instructor: 'د. ياسر عبد الحميد', sessions: [S('الاثنين', '09:00', '10:30', 'lecture', [2, 'LH', 4]), S('الخميس', '09:00', '10:30', 'lab', [2, 'LAB', 5], 'G2')] },
-  { code: 'SE301', ar: 'هندسة البرمجيات', en: 'Software Engineering', year: 3, instructor: 'د. دينا فاروق', sessions: [S('الثلاثاء', '09:00', '10:30', 'lecture', [2, 'LH', 3]), S('الأربعاء', '13:00', '14:30', 'section', [2, 'CR', 2])] },
-  { code: 'AI301', ar: 'مقدمة في الذكاء الاصطناعي', en: 'Intro to AI', year: 3, instructor: 'د. كريم صلاح', sessions: [S('الأربعاء', '09:00', '10:30', 'lecture', [2, 'LH', 1]), S('السبت', '13:00', '14:30', 'lab', [2, 'LAB', 6], 'G1')] },
-  { code: 'WB301', ar: 'تطوير تطبيقات الويب', en: 'Web Development', year: 3, instructor: 'م. مصطفى عيد', sessions: [S('الخميس', '11:00', '14:00', 'lab', [2, 'LAB', 1], 'G1')] },
+  ...LEVEL3,
 
   // ---------- الفرقة الرابعة (مبنى 2) ----------
   { code: 'CS401', ar: 'تعلم الآلة', en: 'Machine Learning', year: 4, instructor: 'د. كريم صلاح', sessions: [S('السبت', '09:00', '10:30', 'lecture', [2, 'LH', 4]), S('الأحد', '11:00', '12:30', 'lab', [2, 'LAB', 7], 'G1')] },

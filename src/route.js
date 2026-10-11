@@ -199,7 +199,7 @@ export function createRouter() {
         const dwalk = D(ns[lastTurnIdx], a);
         // لو الباب في طرف الممر الشمالي
         steps.push({ icon: 'walk', text: `كمل في الممر حوالي ${fmt(Math.max(dwalk, 3))}.`, idx: i });
-        steps.push({ icon: side === 'يمين' ? 'right' : 'left', text: `${room.nameAr} (${room.nameEn}) على ${side === 'يمين' ? 'يمينك' : 'شمالك'} — وصلت! 🎯`, idx: i + 1 });
+        steps.push({ icon: side === 'يمين' ? 'right' : 'left', text: `${room.nameAr} (${room.nameEn}) على ${side === 'يمين' ? 'يمينك' : 'شمالك'} — وصلت!`, idx: i + 1 });
       }
       i++;
     }
